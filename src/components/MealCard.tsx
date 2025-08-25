@@ -1,10 +1,13 @@
 'use client';
 
 import { Meal } from '../types/meal';
+import AddMealForm from './AddMealForm';
+import { useState } from 'react';
 
 interface MealCardProps {
   meal?: Meal;
   type: 'breakfast' | 'lunch' | 'dinner';
+  date: string; // ISO date string
   onAddMeal?: (meal: Meal) => void;
   onUpdateMeal?: (meal: Meal) => void;
   onDeleteMeal?: () => void;
@@ -22,10 +25,7 @@ const mealTypeIcons = {
   dinner: '🍽️'
 };
 
-import AddMealForm from './AddMealForm';
-import { useState } from 'react';
-
-export default function MealCard({ meal, type, onAddMeal, onUpdateMeal, onDeleteMeal }: MealCardProps) {
+export default function MealCard({ meal, type, date, onAddMeal, onUpdateMeal, onDeleteMeal }: MealCardProps) {
   const [showForm, setShowForm] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
@@ -48,6 +48,7 @@ export default function MealCard({ meal, type, onAddMeal, onUpdateMeal, onDelete
         {showForm && (
           <AddMealForm
             type={type}
+            date={date}
             onAdd={(newMeal) => {
               if (onAddMeal) {
                 onAddMeal(newMeal);
@@ -102,6 +103,7 @@ export default function MealCard({ meal, type, onAddMeal, onUpdateMeal, onDelete
       {isEditing && (
         <AddMealForm
           type={type}
+          date={date}
           initialMeal={meal}
           onAdd={(updatedMeal) => {
             if (onUpdateMeal) {

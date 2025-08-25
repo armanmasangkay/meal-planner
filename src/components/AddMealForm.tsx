@@ -11,13 +11,19 @@ const mealTypeIcons = {
 
 interface AddMealFormProps {
   type: 'breakfast' | 'lunch' | 'dinner';
+  date: string; // ISO date string
   initialMeal?: Meal;
   onAdd: (meal: Meal) => void;
   onCancel: () => void;
   onDelete?: () => void;
 }
 
-export default function AddMealForm({ type, initialMeal, onAdd, onCancel, onDelete }: AddMealFormProps) {
+export default function AddMealForm({ type, date, initialMeal, onAdd, onCancel, onDelete }: AddMealFormProps) {
+  const formattedDate = new Date(date).toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric'
+  });
   const [name, setName] = useState(initialMeal?.name || '');
   const [calories, setCalories] = useState(initialMeal?.calories?.toString() || '');
   const [ingredients, setIngredients] = useState(initialMeal?.ingredients?.join(', ') || '');
@@ -37,20 +43,26 @@ export default function AddMealForm({ type, initialMeal, onAdd, onCancel, onDele
   return (
     <div className="fixed inset-0 bg-black/50 flex items-start lg:items-center justify-center z-50 p-4">
       <div className="bg-white rounded-b-2xl lg:rounded-xl p-4 lg:p-6 w-full max-w-md mt-0 lg:mt-0">
-        <div className="flex items-center justify-between mb-6 pb-3 border-b">
-          <div className="flex items-center gap-2">
-            <span className="text-2xl">{mealTypeIcons[type]}</span>
-            <h2 className="text-xl lg:text-2xl font-bold capitalize text-gray-900">
-              {initialMeal ? 'Edit' : 'Add'} {type}
-            </h2>
+        <div className="space-y-4 mb-6 pb-3 border-b">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-2xl">{mealTypeIcons[type]}</span>
+              <h2 className="text-xl lg:text-2xl font-bold capitalize text-gray-900">
+                {initialMeal ? 'Edit' : 'Add'} {type}
+              </h2>
+            </div>
+            <button
+              type="button"
+              onClick={onCancel}
+              className="p-2 -m-2 text-gray-400 hover:text-gray-500 transition-colors"
+            >
+              ✕
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={onCancel}
-            className="p-2 -m-2 text-gray-400 hover:text-gray-500 transition-colors"
-          >
-            ✕
-          </button>
+          <div className="flex items-center gap-2">
+            <span className="text-blue-500">📅</span>
+            <p className="text-sm text-gray-600">{formattedDate}</p>
+          </div>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
