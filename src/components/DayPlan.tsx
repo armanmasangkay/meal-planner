@@ -42,6 +42,7 @@ export default function DayPlan({ day, onAddMeal, onUpdateMeal, onDeleteMeal, is
         <MealCard
           meal={day.breakfast}
           type="breakfast"
+          date={day.date}
           onAddMeal={onAddMeal}
           onUpdateMeal={onUpdateMeal}
           onDeleteMeal={onDeleteMeal ? () => onDeleteMeal('breakfast') : undefined}
@@ -49,6 +50,7 @@ export default function DayPlan({ day, onAddMeal, onUpdateMeal, onDeleteMeal, is
         <MealCard
           meal={day.lunch}
           type="lunch"
+          date={day.date}
           onAddMeal={onAddMeal}
           onUpdateMeal={onUpdateMeal}
           onDeleteMeal={onDeleteMeal ? () => onDeleteMeal('lunch') : undefined}
@@ -56,6 +58,7 @@ export default function DayPlan({ day, onAddMeal, onUpdateMeal, onDeleteMeal, is
         <MealCard
           meal={day.dinner}
           type="dinner"
+          date={day.date}
           onAddMeal={onAddMeal}
           onUpdateMeal={onUpdateMeal}
           onDeleteMeal={onDeleteMeal ? () => onDeleteMeal('dinner') : undefined}
