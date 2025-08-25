@@ -1,102 +1,185 @@
-import Image from "next/image";
+'use client';
+
+import { useState, useEffect } from 'react';
+import WeekPlan from '../components/WeekPlan';
+import ClientWrapper from '../components/ClientWrapper';
+import ShoppingList from '../components/ShoppingList';
+import { WeekPlan as WeekPlanType, Meal } from '../types/meal';
+
+function getWeekStartDate() {
+  const today = new Date();
+  const weekStart = new Date(today);
+  weekStart.setDate(today.getDate() - today.getDay()); // Start from Sunday
+  weekStart.setHours(0, 0, 0, 0);
+  return weekStart.toISOString();
+}
+
+function getDatesForWeek(weekStartStr: string) {
+  const weekStart = new Date(weekStartStr);
+  return Array.from({ length: 7 }, (_, i) => {
+    const date = new Date(weekStart);
+    date.setDate(weekStart.getDate() + i);
+    return {
+      date: date.toISOString(),
+    };
+  });
+}
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [weekPlan, setWeekPlan] = useState<WeekPlanType>(() => {
+    // Try to get saved data from localStorage on initial load
+    if (typeof window !== 'undefined') {
+      const savedPlan = localStorage.getItem('mealPlan');
+      if (savedPlan) {
+        const parsed = JSON.parse(savedPlan);
+        // Check if the saved plan is for the current week
+        const savedStartDate = new Date(parsed.weekStartDate);
+        const currentStartDate = new Date(getWeekStartDate());
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+        if (savedStartDate.toISOString().split('T')[0] === currentStartDate.toISOString().split('T')[0]) {
+          return parsed;
+        }
+      }
+    }
+
+    // If no saved data or it's a different week, create new plan
+    const weekStartDate = getWeekStartDate();
+    return {
+      weekStartDate: weekStartDate,
+      days: getDatesForWeek(weekStartDate),
+    };
+  });
+
+  useEffect(() => {
+    // Save to localStorage whenever weekPlan changes
+    localStorage.setItem('mealPlan', JSON.stringify(weekPlan));
+  }, [weekPlan]);
+
+  const handleAddMeal = (dateStr: string, meal: Meal) => {
+    setWeekPlan(prev => ({
+      ...prev,
+      days: prev.days.map(day => {
+        if (day.date.split('T')[0] === dateStr.split('T')[0]) {
+          return {
+            ...day,
+            [meal.type]: meal,
+          };
+        }
+        return day;
+      }),
+    }));
+  };
+
+  const handleUpdateMeal = (dateStr: string, meal: Meal) => {
+    setWeekPlan(prev => ({
+      ...prev,
+      days: prev.days.map(day => {
+        if (day.date.split('T')[0] === dateStr.split('T')[0]) {
+          return {
+            ...day,
+            [meal.type]: meal,
+          };
+        }
+        return day;
+      }),
+    }));
+  };
+
+  const handleDeleteMeal = (dateStr: string, type: 'breakfast' | 'lunch' | 'dinner') => {
+    setWeekPlan(prev => ({
+      ...prev,
+      days: prev.days.map(day => {
+        if (day.date.split('T')[0] === dateStr.split('T')[0]) {
+          const { [type]: _unused, ...rest } = day; // eslint-disable-line @typescript-eslint/no-unused-vars
+          return rest;
+        }
+        return day;
+      }),
+    }));
+  };
+
+  const weekStartDate = new Date(weekPlan.weekStartDate);
+  const weekEndDate = new Date(weekStartDate);
+  weekEndDate.setDate(weekStartDate.getDate() + 6);
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <header className="bg-white shadow-sm sticky top-0 z-20">
+        <div className="max-w-7xl mx-auto py-4 lg:py-6 px-4">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <div>
+              <div className="flex items-center justify-between">
+                <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">Weekly Meal Plan</h1>
+                <button
+                  className="lg:hidden px-3 py-1.5 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-1"
+                  onClick={() => {
+                    if (typeof window !== 'undefined') {
+                      localStorage.removeItem('mealPlan');
+                    }
+                    const weekStartDate = getWeekStartDate();
+                    setWeekPlan({
+                      weekStartDate: weekStartDate,
+                      days: getDatesForWeek(weekStartDate),
+                    });
+                  }}
+                >
+                  <span>Reset</span>
+                  <span>🔄</span>
+                </button>
+              </div>
+              <p className="text-sm lg:text-base text-gray-500 mt-1">
+                {weekStartDate.toLocaleDateString('en-US', {
+                  month: 'long',
+                  day: 'numeric'
+                })} - {
+                  weekEndDate.toLocaleDateString('en-US', {
+                    month: 'long',
+                    day: 'numeric',
+                    year: 'numeric'
+                  })
+                }
+              </p>
+            </div>
+            <button
+              className="hidden lg:flex px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors items-center gap-2"
+              onClick={() => {
+                if (typeof window !== 'undefined') {
+                  localStorage.removeItem('mealPlan');
+                }
+                const weekStartDate = getWeekStartDate();
+                setWeekPlan({
+                  weekStartDate: weekStartDate,
+                  days: getDatesForWeek(weekStartDate),
+                });
+              }}
+            >
+              <span>Reset Plan</span>
+              <span>🔄</span>
+            </button>
+          </div>
+        </div>
+      </header>
+      <main className="max-w-7xl mx-auto py-4 lg:py-8 px-0 lg:px-4">
+        <div className="flex flex-col lg:flex-row gap-6">
+          <div className="flex-1">
+            <ClientWrapper>
+              <WeekPlan
+                weekPlan={weekPlan}
+                onAddMeal={handleAddMeal}
+                onUpdateMeal={handleUpdateMeal}
+                onDeleteMeal={handleDeleteMeal}
+              />
+            </ClientWrapper>
+          </div>
+          <div className="lg:w-96">
+            <div className="lg:sticky lg:top-28">
+              <ShoppingList days={weekPlan.days} />
+            </div>
+          </div>
         </div>
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+      <footer className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 text-center text-gray-500 text-sm">
+        <p>💪 Plan your meals for a healthier lifestyle</p>
       </footer>
     </div>
   );
