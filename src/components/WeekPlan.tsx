@@ -4,6 +4,15 @@ import { WeekPlan as WeekPlanType, Meal } from '../types/meal';
 import DayPlan from './DayPlan';
 import { useState } from 'react';
 
+// Return a local YYYY-MM-DD string for a Date or ISO string
+function localYMD(input: string | Date) {
+  const d = typeof input === 'string' ? new Date(input) : input;
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
+}
+
 interface WeekPlanProps {
   weekPlan: WeekPlanType;
   onAddMeal: (date: string, meal: Meal) => void;
@@ -12,10 +21,10 @@ interface WeekPlanProps {
 }
 
 export default function WeekPlan({ weekPlan, onAddMeal, onUpdateMeal, onDeleteMeal }: WeekPlanProps) {
-  const today = new Date().toISOString().split('T')[0];
+  const today = localYMD(new Date());
   const [selectedDate, setSelectedDate] = useState(today);
 
-  const selectedDay = weekPlan.days.find(day => day.date.split('T')[0] === selectedDate);
+  const selectedDay = weekPlan.days.find(day => localYMD(day.date) === selectedDate);
 
   return (
     <div className="flex flex-col bg-white rounded-2xl shadow-sm min-h-[600px]">
@@ -24,14 +33,14 @@ export default function WeekPlan({ weekPlan, onAddMeal, onUpdateMeal, onDeleteMe
         <div className="flex gap-2">
           {weekPlan.days.map((day, index) => {
             const date = new Date(day.date);
-            const isToday = day.date.split('T')[0] === today;
-            const isSelected = day.date.split('T')[0] === selectedDate;
+            const isToday = localYMD(day.date) === today;
+            const isSelected = localYMD(day.date) === selectedDate;
             const totalMeals = [day.breakfast, day.lunch, day.dinner].filter(Boolean).length;
 
             return (
               <button
                 key={index}
-                onClick={() => setSelectedDate(day.date.split('T')[0])}
+                onClick={() => setSelectedDate(localYMD(day.date))}
                 className={`flex-shrink-0 p-3 flex flex-col items-center rounded-lg transition-colors min-w-[80px]
                   ${isSelected ? 'bg-blue-50 text-blue-600' : 'hover:bg-gray-50'}
                   ${isToday ? 'ring-2 ring-blue-500' : ''}
@@ -60,14 +69,14 @@ export default function WeekPlan({ weekPlan, onAddMeal, onUpdateMeal, onDeleteMe
           <nav className="space-y-1 p-4">
             {weekPlan.days.map((day, index) => {
               const date = new Date(day.date);
-              const isToday = day.date.split('T')[0] === today;
-              const isSelected = day.date.split('T')[0] === selectedDate;
+              const isToday = localYMD(day.date) === today;
+              const isSelected = localYMD(day.date) === selectedDate;
               const totalMeals = [day.breakfast, day.lunch, day.dinner].filter(Boolean).length;
 
               return (
                 <button
                   key={index}
-                  onClick={() => setSelectedDate(day.date.split('T')[0])}
+                  onClick={() => setSelectedDate(localYMD(day.date))}
                   className={`w-full px-4 py-3 flex items-center justify-between rounded-lg transition-colors
                     ${isSelected ? 'bg-blue-50 text-blue-600' : 'hover:bg-gray-50'}
                     ${isToday ? 'border-l-4 border-blue-500' : ''}
@@ -107,7 +116,7 @@ export default function WeekPlan({ weekPlan, onAddMeal, onUpdateMeal, onDeleteMe
               onAddMeal={(meal) => onAddMeal(selectedDay.date, meal)}
               onUpdateMeal={(meal) => onUpdateMeal(selectedDay.date, meal)}
               onDeleteMeal={(type) => onDeleteMeal(selectedDay.date, type)}
-              isToday={selectedDay.date.split('T')[0] === today}
+              isToday={localYMD(selectedDay.date) === today}
             />
           )}
         </div>

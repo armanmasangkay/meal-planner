@@ -6,6 +6,15 @@ import ClientWrapper from '../components/ClientWrapper';
 import ShoppingList from '../components/ShoppingList';
 import { WeekPlan as WeekPlanType, Meal } from '../types/meal';
 
+// Return a local YYYY-MM-DD string for a Date or ISO string
+function localYMD(input: string | Date) {
+  const d = typeof input === 'string' ? new Date(input) : input;
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
+}
+
 function getWeekStartDate() {
   const today = new Date();
   const weekStart = new Date(today);
@@ -33,10 +42,10 @@ export default function Home() {
       if (savedPlan) {
         const parsed = JSON.parse(savedPlan);
         // Check if the saved plan is for the current week
-        const savedStartDate = new Date(parsed.weekStartDate);
-        const currentStartDate = new Date(getWeekStartDate());
+        const savedStartDate = parsed.weekStartDate;
+        const currentStartDate = getWeekStartDate();
 
-        if (savedStartDate.toISOString().split('T')[0] === currentStartDate.toISOString().split('T')[0]) {
+        if (localYMD(savedStartDate) === localYMD(currentStartDate)) {
           return parsed;
         }
       }
@@ -59,7 +68,7 @@ export default function Home() {
     setWeekPlan(prev => ({
       ...prev,
       days: prev.days.map(day => {
-        if (day.date.split('T')[0] === dateStr.split('T')[0]) {
+  if (localYMD(day.date) === localYMD(dateStr)) {
           return {
             ...day,
             [meal.type]: meal,
@@ -74,7 +83,7 @@ export default function Home() {
     setWeekPlan(prev => ({
       ...prev,
       days: prev.days.map(day => {
-        if (day.date.split('T')[0] === dateStr.split('T')[0]) {
+  if (localYMD(day.date) === localYMD(dateStr)) {
           return {
             ...day,
             [meal.type]: meal,
@@ -89,7 +98,7 @@ export default function Home() {
     setWeekPlan(prev => ({
       ...prev,
       days: prev.days.map(day => {
-        if (day.date.split('T')[0] === dateStr.split('T')[0]) {
+  if (localYMD(day.date) === localYMD(dateStr)) {
           const { [type]: _unused, ...rest } = day; // eslint-disable-line @typescript-eslint/no-unused-vars
           return rest;
         }
