@@ -65,10 +65,10 @@ export default function MealCard({ meal, type, date, onAddMeal, onUpdateMeal, on
   return (
     <>
       <div
-        className="border rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-300 active:scale-[0.98] lg:hover:scale-[1.02] relative touch-manipulation cursor-pointer"
+        className="border rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-300 active:scale-[0.98] lg:hover:scale-[1.02] relative touch-manipulation cursor-pointer overflow-hidden"
         onClick={() => setIsEditing(true)}
       >
-        <div className={`absolute top-0 left-0 w-1 h-full ${
+        <div className={`absolute top-0 left-0 w-1 h-full rounded-l-xl ${
           type === 'breakfast' ? 'bg-amber-400' :
           type === 'lunch' ? 'bg-emerald-400' :
           'bg-indigo-400'
