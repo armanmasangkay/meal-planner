@@ -122,6 +122,7 @@ export default function Home() {
                 <button
                   className="lg:hidden px-3 py-1.5 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-1"
                   onClick={() => {
+                    if (!confirm('Reset the current week plan? This will clear any saved meals.')) return;
                     if (typeof window !== 'undefined') {
                       localStorage.removeItem('mealPlan');
                     }
@@ -152,6 +153,7 @@ export default function Home() {
             <button
               className="hidden lg:flex px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors items-center gap-2"
               onClick={() => {
+                if (!confirm('Reset the current week plan? This will clear any saved meals.')) return;
                 if (typeof window !== 'undefined') {
                   localStorage.removeItem('mealPlan');
                 }
